@@ -202,7 +202,7 @@ class waypoint():
             elif self.config.map_provider == "rmad":
                 map_url = f"{self.config.map_url}?lat={self.lat}&lon={self.lon}&zoom=18"
             elif self.config.map_provider == "reactmap":
-                map_url = f"{self.config.map_url}/id"
+                map_url = f"{self.config.map_url}id"
                 if self.type == "stop":
                     map_url = f"/pokestops/{self.id}"
                 elif self.type == "gym":
