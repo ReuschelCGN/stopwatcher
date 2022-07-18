@@ -1,0 +1,16 @@
+  stopwatcher:
+    container_name: stopwatcher
+    build: ./stopwatcher
+    tty: true
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./stopwatcher/config/:/usr/src/app/config/
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.stopwatcher.schedule: "@every 12h"
+      ofelia.job-exec.stopwatcher.command: "python3 stop_watcher.py"
+    depends_on: 
+      - rocketdb
+    networks:
+        - default
