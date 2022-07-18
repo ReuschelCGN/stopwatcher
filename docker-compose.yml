@@ -1,3 +1,11 @@
+  ofelia:
+    image: mcuadros/ofelia:latest
+    restart: always
+    command: daemon --docker
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
   stopwatcher:
     container_name: stopwatcher
     build: ./stopwatcher
