@@ -204,9 +204,9 @@ class waypoint():
             elif self.config.map_provider == "reactmap":
                 map_url = f"{self.config.map_url}id"
                 if self.type == "stop":
-                    map_url = f"/pokestops/{self.id}"
+                    map_url = f"{map_url}/pokestops/{self.id}"
                 elif self.type == "gym":
-                    map_url = f"/gyms/{self.id}"
+                    map_url = f"{map_url}/gyms/{self.id}"
             links = f"{links} \\| [{self.config.map_name}]({map_url})"
         
         address = ""
