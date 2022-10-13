@@ -1,0 +1,18 @@
+version: '2.4'
+services:
+  stopwatcherv3:
+    container_name: stopwatcherv3
+    build: ./stopwatcherv3
+    command: python3 stop_watcher.py
+    tty: true
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./stopwatcherv3/config/:/usr/src/app/config/
+    depends_on:
+      - yourdb
+      - rdm
+    networks:
+      - default
+    ports:
+      - "9292:9292"
