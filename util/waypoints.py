@@ -201,12 +201,6 @@ class waypoint():
                     map_url = f"{self.config.map_url}@gym/{self.id}"
             elif self.config.map_provider == "rmad":
                 map_url = f"{self.config.map_url}?lat={self.lat}&lon={self.lon}&zoom=18"
-            elif self.config.map_provider == "reactmap":
-                map_url = f"{self.config.map_url}id"
-                if self.type == "stop":
-                    map_url = f"{map_url}/pokestops/{self.id}"
-                elif self.type == "gym":
-                    map_url = f"{map_url}/gyms/{self.id}"
             links = f"{links} \\| [{self.config.map_name}]({map_url})"
         
         address = ""
@@ -347,11 +341,18 @@ class waypoint():
                 if not self.empty:
                     payload = {"chat_id": str(chat_id), "photo": image}
                     result = requests.get(f"https://api.telegram.org/bot{fil['bot_id']}/sendPhoto", params = payload)
+                    if result.status_code == 429:
+                        time.sleep(15)
+                        result = requests.get(f"https://api.telegram.org/bot{fil['bot_id']}/sendPhoto", params = payload)
                     self.config.console.log(f"Result {result.status_code} for Photo")
+                    time.sleep(2)
                 if not text == "":
                     text = f"\n\n{text}"
                 payload = {"chat_id": str(chat_id), "parse_mode": "markdownv2", "text": f"*{embed_username}*\n{title}{text}\n\n[‌‌]({static_map}){address}{links}"}
                 result = requests.get(f"https://api.telegram.org/bot{fil['bot_id']}/sendMessage", params = payload)
+                if result.status_code == 429:
+                    time.sleep(15)
+                    result = requests.get(f"https://api.telegram.org/bot{fil['bot_id']}/sendMessage", params = payload)
                 self.config.console.log(f"Result {result.status_code} for Text")
                 time.sleep(2)
 
