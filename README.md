@@ -1,7 +1,3 @@
-## This repo is no longer maintained
-
-Due to a lack of motivation and time, I've decided to archive most of my repos. At the time of writing this, it's still fully functional.
-
 ### Improvements
 
 Possible improvements that I've thought of
