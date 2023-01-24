@@ -5,7 +5,7 @@ from asyncio import Queue
 from typing import TYPE_CHECKING
 
 from .db.helper.internal_fort import FortHelper
-from .fort import Fort
+from .fort import Fort, Game
 from .watcher_jobs import (
     AnyWatcherJob,
     NewFortJob,
@@ -16,7 +16,10 @@ from .watcher_jobs import (
     ChangedCoverImageJob,
     NewFortDetailsJob,
     SetQueue,
+    RemovedFortJob,
 )
+from .s2 import Cell
+from .removal.removal_checker import RemovalChecker
 
 if TYPE_CHECKING:
     from .db.accessor import DbAccessor
@@ -27,6 +30,7 @@ class FortComparer:
         self._db_accessor: DbAccessor = accessor
         self._in_queue: "Queue[list[Fort]]" = inbound_queue
         self._out_queue: "SetQueue[AnyWatcherJob]" = outbound_queue
+        self._removal_checker: RemovalChecker = RemovalChecker()
         asyncio.create_task(self.compare())
 
     def _add_job(self, job: AnyWatcherJob):
@@ -38,6 +42,10 @@ class FortComparer:
 
             if not forts:
                 continue
+
+            removed_forts = self._removal_checker.check_forts(forts)
+            for removed_fort in removed_forts:
+                self._add_job(RemovedFortJob(removed_fort))
 
             for fort in forts:
                 db_forts = await FortHelper.get_forts_from_id(accessor=self._db_accessor, id_=fort.id)
@@ -60,9 +68,9 @@ class FortComparer:
                     fort.add_other_fort(same_fort)
 
                     def compare_str(attr: str):
-                        return (getattr(same_fort, attr) is None and getattr(fort, attr) is not None) or (
-                            getattr(fort, attr) is not None
-                            and getattr(same_fort, attr) is not None
+                        return (not getattr(same_fort, attr) and getattr(fort, attr)) or (
+                            getattr(fort, attr)
+                            and getattr(same_fort, attr)
                             and getattr(same_fort, attr).strip() != getattr(fort, attr).strip()
                         )
 

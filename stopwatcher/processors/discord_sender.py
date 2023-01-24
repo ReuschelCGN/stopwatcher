@@ -21,6 +21,7 @@ from stopwatcher.watcher_jobs import (
     NewFortDetailsJob,
 )
 from .base_processor import BaseProcessor
+from stopwatcher.s2 import get_cell_vertices
 from stopwatcher.db.helper.internal_fort import FortHelper
 from stopwatcher.geo import Location
 from stopwatcher.log import log
@@ -113,7 +114,15 @@ class DiscordSender(BaseProcessor):
             embed.description = f"Old: **`{job.old}`**\nNew: **`{job.new}`**"
         elif check(ChangedDescriptionJob):
             author = f"New {appear.name} Description"
-            embed.description = f"Old: **`{job.old}`**\nNew: **`{job.new}`**"
+
+            def _get_formatted_text(raw: str | None) -> str:
+                if not raw:
+                    return "[No description]"
+                return "> " + "\n> ".join(raw.split("\n"))
+
+            embed.add_field(name="Old", value=_get_formatted_text(job.old), inline=False)
+            embed.add_field(name="New", value=_get_formatted_text(job.new), inline=False)
+
         elif check(ChangedLocationJob):
             job: ChangedLocationJob
             author = f"New {appear.name} Location"
@@ -148,6 +157,14 @@ class DiscordSender(BaseProcessor):
             if self._tileserver is not None:
                 if not isinstance(job, ChangedLocationJob):
                     if job.fort.type.name.lower() in config.tileserver.visual.nearby_forts:
+                        staticmap.add_polygon(
+                            path=get_cell_vertices(job.fort.location),
+                            fill_color="#ffffff60",
+                            stroke_width=2,
+                            stroke_color="#c7c7c790"
+                        )
+
+                    if job.fort.type.name.lower() in config.tileserver.visual.nearby_forts:
                         bounds = staticmap.get_bounds()
                         sec_forts = await FortHelper.get_forts_in_bounds(
                             self._db_accessor, bounds=bounds, game=job.fort.game
@@ -169,7 +186,7 @@ class DiscordSender(BaseProcessor):
                 embed.title = job.fort.name
             if job.fort.cover_image is not None:
                 embed.set_thumbnail(url=job.fort.cover_image)
-            if job.fort.description is not None:
+            if job.fort.description:
                 extra_text = f"*{job.fort.description}*"
                 if embed.description:
                     embed.description = f"{extra_text}\n\n{embed.description}"
