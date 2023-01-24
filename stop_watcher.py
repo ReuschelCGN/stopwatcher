@@ -19,7 +19,7 @@ config.console.log("Initializing...")
 with open("config/filters.json", encoding="utf-8") as f:
     config.filters = json.load(f)
 
-with open("config/geofence.json", encoding="utf-8") as f:
+with open("config/areas.json" if config.geojson else "config/geofence.json", encoding="utf-8") as f:
     config.geofences = json.load(f)
 
 with open("config/templates.json", encoding="utf-8") as f:
@@ -352,6 +352,7 @@ if any("edits" in i for i in config.filters):
 
 cursor.close()
 mydb.close()
+mydb_p.close()
 
 with open("config/cache/edits.json", "w", encoding="utf-8") as f:
     f.write(json.dumps(edit_list, indent=4))
